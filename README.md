@@ -6,6 +6,38 @@
 ##### _Geliştirilen Uygulamanın Apple Test Flight Ortamına Yüklenmesi_
 
 ## ~~~
+### _Initializing Verilerinin Tasarım Yüklendikten Sonra Çekilmesi_
+
+##### _Main Threadin UI Threadi Beklemeden OnInitializedAsync() Methodunda Yapılan İşlemleri Gerçekleştirmesi_
+
+```ruby
+protected override async Task OnInitializedAsync()
+    {
+        await Task.Run(OnInitializing);
+    }
+
+    private async void OnInitializing()
+    {
+        try
+        {
+            _isLoading = true;
+            await InvokeAsync(StateHasChanged);
+
+            ...
+        }
+        catch
+        {
+            ...
+        }
+        finally
+        {
+            _isLoading = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+```
+
+## ~~~
 ### _Splash Ekranının Ardından Gelen Beyaz Ekran_
 
 ##### _wwwroot İçerisinde index.html Dosyasında Düzenlemeler_
