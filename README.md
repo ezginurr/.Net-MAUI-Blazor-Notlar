@@ -8,7 +8,7 @@
 ## ~~~
 ### _Splash Ekranının Ardından Gelen Beyaz Ekran_
 
-##### _wwwroot İçerisinde index.html Dosyasında <body> Kısmının Beyaz Ekran İçin Düzenlenmesi_
+##### _wwwroot İçerisinde index.html Dosyasında Düzenlemeler_
 
 ```ruby
 <body>
@@ -22,6 +22,20 @@
     </div>
     <script src="_framework/blazor.webview.js" autostart="false"></script>
 </body>
+```
+```ruby
+<div id="app" style="background-color: black;">Loading...</div>
+```
+
+##### _App.xaml Dosyasında Düzenlemeler_
+
+```ruby
+<Style TargetType="BlazorWebView">
+    <Setter Property="BackgroundColor" Value="Black" />
+</Style>
+<Style TargetType="NavigationPage" ApplyToDerivedTypes="True">
+    <Setter Property="BackgroundColor" Value="Black" />
+</Style>
 ```
 
 
