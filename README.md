@@ -205,6 +205,105 @@ public class AppDelegate : MauiUIApplicationDelegate, IUNUserNotificationCenterD
 - https://github.com/xamarin/GoogleApisForiOSComponents/blob/main/docs/Firebase/CloudMessaging/GettingStarted.md
 
 
+
+## ~~~
+### _Çoklu Dil Seçeneği - Localization_
+
+##### _Resource Dosyalarının Eklenmesi_
+![image](https://github.com/ezginurr/.Net-MAUI-Blazor-Notlar/assets/48153438/712614fe-358b-48db-836d-c12991143740)
+
+##### _MauiProgram.cs Dosyasındaki Düzenlemeler_
+
+Microsoft.Extensions.Localization paketi indirildi ve aşağıdaki ekleme yapıldı.
+
+```ruby
+builder.Services.AddLocalization();
+```
+
+##### _MainPage.xaml.cs Dosyasındaki Düzenlemeler_
+
+```ruby
+public MainPage()
+	{
+		InitializeComponent();
+
+        var lang = Preferences.Default.Get("language", "tr");
+        var ci = new CultureInfo(lang);
+        CultureInfo.CurrentCulture = ci;
+        CultureInfo.CurrentUICulture = ci;
+    }
+```
+
+##### _Dil Seçiminin Yapıldığı Razor Sayfasındaki Düzenlemeler_
+
+```ruby
+@inject IStringLocalizer<LangResources> Localizer
+@using System.Globalization;
+```
+```ruby
+<div class="login-page">
+        <div class="ring">
+            @Localizer["Loading"]
+            <span></span>
+        </div>
+    </div>
+```
+```ruby
+<a @onclick="SelectTR">Türkçe</a>
+<a @onclick="SelectEN">English</a>
+```
+```ruby
+private async void SelectTR()
+    {
+        try
+        {
+            Preferences.Default.Set("language", "tr");
+
+            (Application.Current as App).MainPage.Dispatcher.Dispatch(() =>
+            {
+                CultureInfo cultureInfo = new CultureInfo("tr");
+                CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+                CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+                Thread.CurrentThread.CurrentCulture = cultureInfo;
+                Thread.CurrentThread.CurrentUICulture = cultureInfo;
+            });
+        }
+        catch (Exception ex) { }
+        await InvokeAsync(StateHasChanged);
+    
+    }
+
+    private async void SelectEN()
+    {
+        try 
+        {
+           Preferences.Default.Set("language", "en");
+        
+           (Application.Current as App).MainPage.Dispatcher.Dispatch(() =>
+           {
+               CultureInfo cultureInfo = new CultureInfo("en");
+               CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+               CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+               Thread.CurrentThread.CurrentCulture = cultureInfo;
+               Thread.CurrentThread.CurrentUICulture = cultureInfo;
+           });
+        }
+        catch (Exception ex) { }
+       await InvokeAsync(StateHasChanged);
+    }
+```
+
+##### _Diğer Razor Sayfalarındaki Düzenlemeler_
+
+```ruby
+@inject IStringLocalizer<LangResources> Localizer
+```
+```ruby
+<h3>@Localizer["Welcome"] @_user.FirstName!</h3>
+```
+
+
+
 ## ~~~
 ### _Splash Ekranının Ardından Gelen Beyaz Ekran_
 
