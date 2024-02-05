@@ -205,6 +205,133 @@ public class AppDelegate : MauiUIApplicationDelegate, IUNUserNotificationCenterD
 - https://github.com/xamarin/GoogleApisForiOSComponents/blob/main/docs/Firebase/CloudMessaging/GettingStarted.md
 
 
+## ~~~
+### _Firebase - .Net Core Bildirim Gönderme Ve .Net Mauı Blazor Bildirim İşleme_
+
+##### _.Net Core_
+
+```ruby
+public FCMNotificationService() 
+        {
+            var defaultApp = FirebaseApp.Create(new AppOptions()
+            {
+                Credential = GoogleCredential.FromFile(Path.Combine(Environment.CurrentDirectory, "argusmydkey.json")),
+                //Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "argusmyd-key.json")),
+            });
+        }
+```
+```ruby
+public async Task<bool> SendNotification(Announcement announcement)
+        {
+            try
+            {
+                var myToken = "cIZpyJxur0...:APA91bHVfDXHc7.....";
+                var message = new Message()
+                {
+                    Notification = new Notification()
+                    {
+                        Title = "Yeni Bir Duyuru Eklendi!",
+                        Body = "'" + announcement.Title + "'" + " başlıklı duyuru eklendi. - with token"
+                    },
+                    Token = myToken,
+                };
+
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> SendNotificationToAllUsers(Announcement announcement)
+        {
+            try
+            {
+                var message = new Message()
+                {
+                    Notification = new Notification()
+                    {
+                        Title = "Yeni Bir Duyuru Eklendi!",
+                        Body = "'" + announcement.Title + "'" + " başlıklı duyuru eklendi."
+                    },
+                    Topic = "allUsers",
+                };
+
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+        }
+
+        public async Task<bool> SendNotificationToOrganizationUsers(Announcement announcement)
+        {
+            try
+            {
+                var message = new Message()
+                {
+                    Data = new Dictionary<string, string>()
+                    {
+                        { "AnnouncementId", announcement.Id },
+                    },
+                    Notification = new Notification()
+                    {
+                        Title = "Yeni Bir Duyuru Eklendi!",
+                        Body = "'" + announcement.Title + "'" + " başlıklı duyuru eklendi."
+                    },
+                    Topic = announcement.OrganizationId,
+                };
+
+                string response = await FirebaseMessaging.DefaultInstance.SendAsync(message);
+
+                return true;
+            }
+            catch (System.Exception ex)
+            {
+                return false;
+            }
+        }
+```
+
+##### _.Net Mauı Blazor_
+
+```ruby
+[Export("userNotificationCenter:didReceiveNotificationResponse:withCompletionHandler:")]
+    public void DidReceiveNotificationResponse(UNUserNotificationCenter center, UNNotificationResponse response, Action completionHandler)
+    {
+        NSDictionary userInfo = response.Notification.Request.Content.UserInfo;
+        //Messaging.SharedInstance.AppDidReceiveMessage(userInfo);
+
+        if (userInfo.ContainsKey(new NSString("AnnouncementId")))
+        {
+            var annId = userInfo[new NSString("AnnouncementId")].ToString();
+            Preferences.Default.Set("AnnouncementId", annId);
+        }
+
+        completionHandler();
+    }
+```
+```ruby
+var notificationAnnId = Preferences.Default.Get("AnnouncementId", "");
+if (notificationAnnId == "")
+{
+	navMng.NavigateTo("/home");
+}
+else
+{
+	//Preferences.Default.Set("AnnouncementId", "");
+	Preferences.Default.Remove("AnnouncementId");
+	await AppService.Instance.SetDisplayedAnnouncement(notificationAnnId);
+	navMng.NavigateTo("/displayannouncement");
+}
+```
+
 
 ## ~~~
 ### _Çoklu Dil Seçeneği - Localization_
