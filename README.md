@@ -45,8 +45,12 @@ protected override async Task OnInitializedAsync()
 -
 -
 
-##### _GoogleService-Info.plist Dosyasının Projeye Eklenmesi_
-
+##### _GoogleService-Info.plist Dosyasının Projeye Eklenmesi - .csprog Dosyası_
+```ruby
+	<ItemGroup>
+		<BundleResource Include="Platforms\iOS\GoogleService-Info.plist" Link="GoogleService-Info.plist"/>
+	</ItemGroup>
+```
 
 ##### _Info.plist Dosyasındaki Düzenlemeler_
 ```ruby
@@ -203,6 +207,115 @@ public class AppDelegate : MauiUIApplicationDelegate, IUNUserNotificationCenterD
 - https://firebase.google.com/docs/cloud-messaging/ios/client?hl=en
 - https://github.com/michalpr/Docs/blob/main/Firebase_MAUI_iOS_push_notification.md
 - https://github.com/xamarin/GoogleApisForiOSComponents/blob/main/docs/Firebase/CloudMessaging/GettingStarted.md
+
+## ~~~
+### _Android Cihazlarda Firebase Cloud Messaging(FCM)_
+
+##### _Kullanılan Paketler_
+- Xamarin.AndroidX.Collection
+- Xamarin.AndroidX.Collection.Ktx
+- Xamarin.AndroidX.Preference
+- Xamarin.Google.Dagger
+- Xamarin.Firebase.Messaging
+- Xamarin.GooglePlayServices.Base
+
+##### _google-services.json Dosyasının Projeye Eklenmesi_
+```ruby
+	<ItemGroup>
+		<GoogleServicesJson Include="Platforms\Android\google-services.json" />
+	</ItemGroup>
+```
+
+##### _AndroidManifest.xml Dosyasındaki Düzenlemeler_
+```ruby
+	<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+```
+
+##### _MainActivity.cs Dosyasındaki Düzenlemeler_
+```ruby
+    internal static readonly string Channel_ID = "FCMChannel";
+    public MainActivity() { }
+
+    protected override void OnCreate(Bundle savedInstanceState)
+    {
+        base.OnCreate(savedInstanceState);
+
+        if (ContextCompat.CheckSelfPermission(this, Android.Manifest.Permission.PostNotifications) == Permission.Denied)
+        {
+            ActivityCompat.RequestPermissions(this, new String[] { Android.Manifest.Permission.PostNotifications }, 1);
+        }
+
+        CreateNotificationChannel();
+    }
+
+    private void CreateNotificationChannel()
+    {
+        if (OperatingSystem.IsOSPlatformVersionAtLeast("android", 26))
+        {
+            var channel = new NotificationChannel(Channel_ID, "FCM Notification Channel", NotificationImportance.Default);
+
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(Android.Content.Context.NotificationService);
+            notificationManager.CreateNotificationChannel(channel);
+        }
+    }
+```
+
+##### _FCMService.cs Dosyasındaki Düzenlemeler_
+Firebase methodlarını override edebilmek için eklediğimiz bir servis
+
+```ruby
+    [Service(Exported = true)]
+    [IntentFilter(new[] { "com.google.firebase.MESSAGING_EVENT" })]
+    public class FCMService : FirebaseMessagingService
+    {
+        public FCMService() { }
+
+        public override void OnNewToken(string fcmToken)
+        {
+            base.OnNewToken(fcmToken);
+
+            if (Preferences.ContainsKey("DeviceToken"))
+            {
+                Preferences.Remove("DeviceToken");
+            }
+            Preferences.Set("DeviceToken", fcmToken);
+        }
+
+        public override void OnMessageReceived(RemoteMessage message)
+        {
+            base.OnMessageReceived(message);
+
+            var notification = message.GetNotification();
+
+            if (message.Data.ContainsKey("AnnouncementId"))
+            {
+                var annId = message.Data["AnnouncementId"].ToString();
+                Preferences.Default.Set("AnnouncementId", annId);
+            }
+
+            //SendNotification(notification.Body, notification.Title, message.Data);
+            int notificationId = new Random().Next();
+
+            //if (OperatingSystem.IsOSPlatformVersionAtLeast("android", 26)) {
+            //    var channel = new NotificationChannel(channelId, "FCM Notification Channel", NotificationImportance.Default);
+            //    notificationManager.CreateNotificationChannel(channel);
+            //}
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(this, MainActivity.Channel_ID)
+                .SetContentTitle(message.GetNotification().Title) 
+                .SetContentText(message.GetNotification().Body)
+                .SetSmallIcon(Resource.Drawable.notificon)
+                .SetAutoCancel(true);
+
+            NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
+            notificationManager.Notify(notificationId, builder.Build());
+        }
+    }
+```
+
+##### _Yararlı Linkler_
+- https://www.youtube.com/watch?v=gBbbctEvbOk
+- https://github.com/mistrypragnesh40/PushNotificationDemoMAUI/tree/master/Platforms/Android
 
 
 ## ~~~
