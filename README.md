@@ -42,7 +42,7 @@ protected override async Task OnInitializedAsync()
 ### _iOS Cihazlarda Firebase Cloud Messaging(FCM)_
 
 ##### _Kullanılan Paketler_
--
+- Xamarin.Firebase.iOS.CloudMessaging
 -
 
 ##### _GoogleService-Info.plist Dosyasının Projeye Eklenmesi - .csprog Dosyası_
