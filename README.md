@@ -246,6 +246,30 @@ public class AppDelegate : MauiUIApplicationDelegate, IUNUserNotificationCenterD
         }
 
         CreateNotificationChannel();
+
+	if (Intent?.Extras != null && Intent.Extras.ContainsKey("AnnouncementId"))
+        {
+            var annId = Intent.Extras.GetString("AnnouncementId");
+            if (!string.IsNullOrEmpty(annId))
+            {
+                Preferences.Default.Set("AnnouncementId", annId);
+            }
+        }
+    }
+
+    protected override void OnNewIntent(Intent intent)
+    {
+        base.OnNewIntent(intent);
+        if (intent.Extras != null && intent.Extras.ContainsKey("AnnouncementId"))
+        {
+            var annId = intent.Extras.GetString("AnnouncementId");
+            if (!string.IsNullOrEmpty(annId))
+            {
+                // Preferences.Default.Set("AnnouncementId", annId);
+                
+                // Navigate single announcement page
+            }
+        }
     }
 
     private void CreateNotificationChannel()
@@ -296,6 +320,11 @@ Firebase methodlarını override edebilmek için eklediğimiz bir servis
             //SendNotification(notification.Body, notification.Title, message.Data);
             int notificationId = new Random().Next();
 
+            var intent = new Intent(this, typeof(MainActivity));
+            intent.PutExtra("AnnouncementId", annId);
+            intent.AddFlags(ActivityFlags.ClearTop | ActivityFlags.SingleTop | ActivityFlags.NewTask);
+            var pendingIntent = PendingIntent.GetActivity(this, 0, intent, PendingIntentFlags.UpdateCurrent | PendingIntentFlags.Immutable);
+
             //if (OperatingSystem.IsOSPlatformVersionAtLeast("android", 26)) {
             //    var channel = new NotificationChannel(channelId, "FCM Notification Channel", NotificationImportance.Default);
             //    notificationManager.CreateNotificationChannel(channel);
@@ -306,6 +335,7 @@ Firebase methodlarını override edebilmek için eklediğimiz bir servis
                 .SetContentText(message.GetNotification().Body)
                 .SetSmallIcon(Resource.Drawable.notificon)
                 .SetAutoCancel(true);
+		.SetContentIntent(pendingIntent);
 
             NotificationManager notificationManager = (NotificationManager)GetSystemService(NotificationService);
             notificationManager.Notify(notificationId, builder.Build());
