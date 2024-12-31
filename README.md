@@ -358,8 +358,8 @@ public FCMNotificationService()
         {
             var defaultApp = FirebaseApp.Create(new AppOptions()
             {
-                Credential = GoogleCredential.FromFile(Path.Combine(Environment.CurrentDirectory, "argusmydkey.json")),
-                //Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "argusmyd-key.json")),
+                Credential = GoogleCredential.FromFile(Path.Combine(Environment.CurrentDirectory, "key.json")),
+                //Credential = GoogleCredential.FromFile(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "key.json")),
             });
         }
 ```
